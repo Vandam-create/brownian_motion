@@ -275,5 +275,6 @@ CMakeFiles/brownian_motion.dir/src/main.cpp.o: \
  /usr/include/c++/13/backward/auto_ptr.h \
  /usr/include/c++/13/pstl/glue_memory_defs.h \
  /home/van-dam/Desktop/Question_fiziks/brownian_motion/include/particle.h \
+ /home/van-dam/Desktop/Question_fiziks/brownian_motion/include/config.h \
  /home/van-dam/Desktop/Question_fiziks/brownian_motion/include/grid_system.h \
  /home/van-dam/Desktop/Question_fiziks/brownian_motion/include/unit_converter.h

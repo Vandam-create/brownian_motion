@@ -7,6 +7,7 @@
 #include <memory>
 #include "particle.h"
 #include <algorithm>
+#include "config.h"
 #include "grid_system.h"
 
 class PhysicsEngine {
@@ -20,6 +21,8 @@ private:
     int solver_iterations = 10;
     double damping = 0;
     
+    Config::SimulationMode mode = Config::SimulationMode::BROWNIAN_MOTION;
+
     double box_width = 1600;
     double box_height = 800;
     
@@ -46,10 +49,11 @@ public:
         grid.init(box_width, box_height, max_diameter);
     }
 
-    size_t createParticle(const Vec2d& position, double mass = 1.0, Vec2d velosity = {0, 0}, double radius = 5.0, bool fixed = false) {
-        particles.emplace_back(position, mass, velosity, radius, fixed);
+    size_t createParticle(const Vec2d& position, double mass = 1.0, double radius = 5.0, Vec2d velosity = {0, 0}, bool fixed = false) {
+        particles.emplace_back(position, mass, velosity, radius, fixed); // Скорость — 3, Радиус — 4
         return particles.size() - 1;
     }
+
     
     //удаление частицы
     void removeParticle(size_t idx);
@@ -73,6 +77,9 @@ public:
     void setParticle(std::vector<Particle> setter) { particles = setter; }
     void reset_time(){current_time = 0;}
 
+
+    void setMode(Config::SimulationMode new_mode) { mode = new_mode; }
+    Config::SimulationMode getMode() const { return mode; }
     //очистка
     void clear() {
         particles.clear();

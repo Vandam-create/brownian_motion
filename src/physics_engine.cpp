@@ -116,11 +116,11 @@ void PhysicsEngine::resolveParticleCollision(size_t idx1, size_t idx2) {
     }
 }
 
-// Отскок от стен бокса (код остался прежним)
 void PhysicsEngine::solveWallCollisions() {
     for (auto& p : particles) {
         if (p.fixed) continue;
 
+        // --- 1. СТОЛКНОВЕНИЯ С ВНЕШНИМИ СТЕНАМИ БОКСА (Для обоих режимов) ---
         if (p.predicted_position.x - p.radius < 0.0) {
             p.predicted_position.x = p.radius;
             if (p.velocity.x < 0.0) p.velocity.x = -p.velocity.x;
@@ -136,8 +136,35 @@ void PhysicsEngine::solveWallCollisions() {
             p.predicted_position.y = box_height - p.radius;
             if (p.velocity.y > 0.0) p.velocity.y = -p.velocity.y;
         }
+
+        // --- 2. СТОЛКНОВЕНИЕ С ЦЕНТРАЛЬНОЙ ПЕРЕГОРОДКОЙ (Только в режиме ЭФФУЗИИ) ---
+        if (mode == Config::SimulationMode::EFFUSION) {
+            // Проверяем, пересекает ли частица вертикальную линию перегородки
+            double k = p.radius;
+            
+            // Если частица находится в районе перегородки по координате X
+            if (std::abs(p.predicted_position.x - Config::WALL_X) < p.radius) {
+                // ПРОВЕРЯЕМ: ПОПАЛИ ЛИ МЫ В ДЫРКУ?
+                // Если координата Y частицы лежит ВНУТРИ дырки — она пролетает свободно (ничего не делаем)
+                if (p.predicted_position.y > Config::HOLE_TOP && p.predicted_position.y < Config::HOLE_BOTTOM) {
+                    continue; 
+                }
+                
+                // ЕСЛИ В ДЫРКУ НЕ ПОПАЛИ — ОТСКАКИВАЕМ ОТ ПЕРЕГОРОДКИ
+                if (p.position.x < Config::WALL_X) {
+                    // Летела слева -> возвращаем налево
+                    p.predicted_position.x = Config::WALL_X - p.radius;
+                    if (p.velocity.x > 0.0) p.velocity.x = -p.velocity.x;
+                } else {
+                    // Летела справа -> возвращаем направо
+                    p.predicted_position.x = Config::WALL_X + p.radius;
+                    if (p.velocity.x < 0.0) p.velocity.x = -p.velocity.x;
+                }
+            }
+        }
     }
 }
+
 
 void PhysicsEngine::removeParticle(size_t idx) {
     if (idx < particles.size()) {
