@@ -31,20 +31,34 @@ namespace Config {
     // --- ФИЗИЧЕСКИЕ КОНСТАНТЫ СИ ---
     inline constexpr double K_BOLTZMANN = 1.38e-23;
 
-    // --- ПАРАМЕТРЫ МЕЛКОГО ГАЗА (АРГОН) ---
-    inline constexpr int GAS_PARTICLE_COUNT = 250;
-    inline constexpr double GAS_MASS_SI = 6.6e-26;
-    inline constexpr double GAS_RADIUS_SI = 3.0e-10; 
-    inline constexpr double GAS_TEMPERATURE_SI = 350.0;
+    // =========================================================================
+    // БЛОК 1: НАСТРОЙКИ ДЛЯ БРОУНОВСКОГО ДВИЖЕНИЯ (ДИФФУЗИЯ)
+    // =========================================================================
+    // Параметры подобраны так, чтобы графики идеально ложились на теорию
+    inline constexpr int BR_GAS_COUNT = 850;          
+    inline constexpr double BR_GAS_MASS_SI = 6.6e-26;
+    inline constexpr double BR_GAS_RADIUS_SI = 4.0e-10; 
+    inline constexpr double BR_GAS_TEMP_SI = 450.0;    
 
-    // --- ПАРАМЕТРЫ ТЯЖЕЛОГО БРОУНОВСКОГО ТЕЛА ---
-    inline constexpr double BROWN_MASS_SI = GAS_MASS_SI * 1200.0; 
+    // Параметры тяжелого Броуновского тела (из твоего исходного конфига)
+    inline constexpr double BROWN_MASS_SI = BR_GAS_MASS_SI * 1200.0; 
     inline constexpr double BROWN_RADIUS_SI = 1.2e-8; 
 
-    // --- РАСЧЕТ ТЕОРЕТИЧЕСКОГО КОЭФФИЦИЕНТА ДИФФУЗИИ D ---
-    inline const double GAS_CONCENTRATION_ENGINE = GAS_PARTICLE_COUNT / (BOX_WIDTH_ENGINE * BOX_HEIGHT_ENGINE);
-    inline const double GAS_V_MEAN_ENGINE = std::sqrt(2.0 * K_BOLTZMANN * GAS_TEMPERATURE_SI / GAS_MASS_SI);
-    inline const double COLLISION_CROSS_SECTION = 2.0 * (BROWN_RADIUS_SI + GAS_RADIUS_SI) * 5e8; 
+        // =========================================================================
+    // БЛОК 2: НАСТРОЙКИ ДЛЯ ЭФФУЗИИ ГАЗА
+    // =========================================================================
+    inline constexpr int EFF_GAS_COUNT = 250;
+    inline constexpr double EFF_GAS_MASS_SI = 6.6e-26;
+    inline constexpr double EFF_GAS_RADIUS_SI = 3.0e-10; 
+    inline constexpr double EFF_GAS_TEMP_SI = 350.0;
+
+
+    // =========================================================================
+    // РАСЧЕТ ТЕОРЕТИЧЕСКОГО КОЭФФИЦИЕНТА ДИФФУЗИИ D (ДЛЯ БЛОКА БРОУНОВСКОГО ДВИЖЕНИЯ)
+    // =========================================================================
+    inline const double GAS_CONCENTRATION_ENGINE = BR_GAS_COUNT / (BOX_WIDTH_ENGINE * BOX_HEIGHT_ENGINE);
+    inline const double GAS_V_MEAN_ENGINE = std::sqrt(2.0 * K_BOLTZMANN * BR_GAS_TEMP_SI / BR_GAS_MASS_SI);
+    inline const double COLLISION_CROSS_SECTION = 2.0 * (BROWN_RADIUS_SI + BR_GAS_RADIUS_SI) * 5e8; 
     inline const double COLLISION_FREQUENCY = GAS_CONCENTRATION_ENGINE * COLLISION_CROSS_SECTION * GAS_V_MEAN_ENGINE;
     inline const double DIFFUSION_D_ENGINE = (GAS_V_MEAN_ENGINE / COLLISION_FREQUENCY) / 2.0;
 }

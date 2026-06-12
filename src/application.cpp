@@ -34,12 +34,20 @@ void Application::resetSimulation() {
     initial_brownian_pos = Vec2d(box_width_engine / 2.0, box_height_engine / 2.0);
 
     if (Config::CURRENT_MODE == Config::SimulationMode::BROWNIAN_MOTION) {
-        engine.createParticle(initial_brownian_pos, converter.massSIToEngine(Config::BROWN_MASS_SI), converter.lengthSIToEngine(Config::BROWN_RADIUS_SI), Vec2d(0, 0), false);
-        spawnGas(Config::GAS_PARTICLE_COUNT, Config::GAS_TEMPERATURE_SI, Config::GAS_MASS_SI, Config::GAS_RADIUS_SI);
+        // Режим Броуновского движения: берем параметры из Блока 1 (BR_...)
+        engine.createParticle(initial_brownian_pos, converter.massSIToEngine(Config::BROWN_MASS_SI), Config::BROWN_RADIUS_SI * 5e8, Vec2d(0, 0), false);
+        
+        // Спавним плотный броуновский газ (850 штук)
+        spawnGas(Config::BR_GAS_COUNT, Config::BR_GAS_TEMP_SI, Config::BR_GAS_MASS_SI, Config::BR_GAS_RADIUS_SI);
     } 
     else if (Config::CURRENT_MODE == Config::SimulationMode::EFFUSION) {
-        spawnGas(Config::GAS_PARTICLE_COUNT, Config::GAS_TEMPERATURE_SI, Config::GAS_MASS_SI, Config::GAS_RADIUS_SI);
+        // Режим Эффузии: берем параметры из Блока 2 (EFF_...)
+        // Спавним разреженный газ (всего 200 штук) строго в левую комнату
+        spawnGas(Config::EFF_GAS_COUNT, Config::EFF_GAS_TEMP_SI, Config::EFF_GAS_MASS_SI, Config::EFF_GAS_RADIUS_SI);
     }
+
+    
+
 }
 
 void Application::spawnGas(int count, double temperature_si, double particle_mass_si, double particle_radius_si) {
@@ -346,7 +354,7 @@ void Application::renderMenu() {
 
         size_t points_count = effusion_N_left.size();
         float scale_x = 330.0f / static_cast<float>(points_count);
-        float scale_y = 160.0f / static_cast<float>(Config::GAS_PARTICLE_COUNT);
+        float scale_y = 160.0f / static_cast<float>(Config::EFF_GAS_COUNT);
 
         sf::VertexArray n_left_line(sf::LineStrip, points_count);
         for (size_t i = 0; i < points_count; ++i) {
