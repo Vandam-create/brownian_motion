@@ -1,0 +1,20 @@
+[
+{
+  "directory": "/home/van-dam/Desktop/Question_fiziks/brownian_motion/build",
+  "command": "/usr/bin/g++  -I/home/van-dam/Desktop/Question_fiziks/brownian_motion/include -g -std=gnu++17 -o CMakeFiles/brownian_motion.dir/src/application.cpp.o -c /home/van-dam/Desktop/Question_fiziks/brownian_motion/src/application.cpp",
+  "file": "/home/van-dam/Desktop/Question_fiziks/brownian_motion/src/application.cpp",
+  "output": "CMakeFiles/brownian_motion.dir/src/application.cpp.o"
+},
+{
+  "directory": "/home/van-dam/Desktop/Question_fiziks/brownian_motion/build",
+  "command": "/usr/bin/g++  -I/home/van-dam/Desktop/Question_fiziks/brownian_motion/include -g -std=gnu++17 -o CMakeFiles/brownian_motion.dir/src/main.cpp.o -c /home/van-dam/Desktop/Question_fiziks/brownian_motion/src/main.cpp",
+  "file": "/home/van-dam/Desktop/Question_fiziks/brownian_motion/src/main.cpp",
+  "output": "CMakeFiles/brownian_motion.dir/src/main.cpp.o"
+},
+{
+  "directory": "/home/van-dam/Desktop/Question_fiziks/brownian_motion/build",
+  "command": "/usr/bin/g++  -I/home/van-dam/Desktop/Question_fiziks/brownian_motion/include -g -std=gnu++17 -o CMakeFiles/brownian_motion.dir/src/physics_engine.cpp.o -c /home/van-dam/Desktop/Question_fiziks/brownian_motion/src/physics_engine.cpp",
+  "file": "/home/van-dam/Desktop/Question_fiziks/brownian_motion/src/physics_engine.cpp",
+  "output": "CMakeFiles/brownian_motion.dir/src/physics_engine.cpp.o"
+}
+]

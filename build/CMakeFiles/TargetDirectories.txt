@@ -1,0 +1,3 @@
+/home/van-dam/Desktop/Question_fiziks/brownian_motion/build/CMakeFiles/brownian_motion.dir
+/home/van-dam/Desktop/Question_fiziks/brownian_motion/build/CMakeFiles/edit_cache.dir
+/home/van-dam/Desktop/Question_fiziks/brownian_motion/build/CMakeFiles/rebuild_cache.dir
