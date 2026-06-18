@@ -4,7 +4,7 @@
 
 // Главный такт симуляции
 void PhysicsEngine::step() {
-    // 1. Внешние силы
+    //Внешние силы
     for (auto& particle : particles) {
         if (!particle.fixed) {
             particle.velocity += gravity * time_step;
@@ -12,24 +12,24 @@ void PhysicsEngine::step() {
         }
     }
     
-    // 2. Прогноз позиций
+    //Прогноз позиций
     for (auto& particle : particles) {
         particle.predicted_position = particle.position + particle.velocity * time_step;
     }
 
-    // 3. Перестроение сетки под новые прогнозируемые позиции кадра
+    //перестроение сетки под новые прогнозируемые позиции кадра
     grid.clear();
     for (size_t i = 0; i < particles.size(); ++i) {
         grid.addParticle(i, particles[i].predicted_position);
     }
 
-    // 4. Итерационный солвер коллизий
+    //Итерационный солвер коллизий
     for (int iter = 0; iter < solver_iterations; ++iter) {
-        solveGridCollisions(); // Умный обход через сетку за O(N)
+        solveGridCollisions();
         solveWallCollisions();
     }
 
-    // 5. Финализация кадра
+    //финализация кадра
     for (auto& particle : particles) {
         if (!particle.fixed) {
             particle.position = particle.predicted_position;
@@ -39,13 +39,10 @@ void PhysicsEngine::step() {
     current_time += time_step;
 }
 
-// Умный обход коллизий через пространственные ячейки
 void PhysicsEngine::solveGridCollisions() {
     int w_cells = grid.getWidthCells();
     int h_cells = grid.getHeightCells();
 
-    // Смещения для 4 соседних ячеек (право, низ, право-верх, лево-низ)
-    // Позволяет не дублировать проверки пар объектов
     const int dx[] = {1, 0, 1, -1};
     const int dy[] = {0, 1, 1,  1};
 
@@ -54,14 +51,12 @@ void PhysicsEngine::solveGridCollisions() {
             const auto& cell = grid.getCellContent(x, y);
             if (cell.empty()) continue;
 
-            // А. Проверяем коллизии частиц ЖЕСТКО внутри одной и той же ячейки
             for (size_t i = 0; i < cell.size(); ++i) {
                 for (size_t j = i + 1; j < cell.size(); ++j) {
                     resolveParticleCollision(cell[i], cell[j]);
                 }
             }
 
-            // Б. Проверяем коллизии текущих частиц с частицами из 4 соседних ячеек
             for (size_t i = 0; i < cell.size(); ++i) {
                 size_t idx1 = cell[i];
                 
@@ -69,7 +64,6 @@ void PhysicsEngine::solveGridCollisions() {
                     int nx = x + dx[n];
                     int ny = y + dy[n];
 
-                    // Защита от выхода за границы сетки ячеек
                     if (nx >= 0 && nx < w_cells && ny >= 0 && ny < h_cells) {
                         const auto& neighbor_cell = grid.getCellContent(nx, ny);
                         for (size_t idx2 : neighbor_cell) {
@@ -82,7 +76,7 @@ void PhysicsEngine::solveGridCollisions() {
     }
 }
 
-// Честный гибрид PBD и ЗСИ (код остался прежним)
+//модифицированный PBD
 void PhysicsEngine::resolveParticleCollision(size_t idx1, size_t idx2) {
     Particle& p1 = particles[idx1];
     Particle& p2 = particles[idx2];
@@ -120,7 +114,6 @@ void PhysicsEngine::solveWallCollisions() {
     for (auto& p : particles) {
         if (p.fixed) continue;
 
-        // --- 1. СТОЛКНОВЕНИЯ С ВНЕШНИМИ СТЕНАМИ БОКСА (Для обоих режимов) ---
         if (p.predicted_position.x - p.radius < 0.0) {
             p.predicted_position.x = p.radius;
             if (p.velocity.x < 0.0) p.velocity.x = -p.velocity.x;
@@ -137,26 +130,22 @@ void PhysicsEngine::solveWallCollisions() {
             if (p.velocity.y > 0.0) p.velocity.y = -p.velocity.y;
         }
 
-        // --- 2. СТОЛКНОВЕНИЕ С ЦЕНТРАЛЬНОЙ ПЕРЕГОРОДКОЙ (Только в режиме ЭФФУЗИИ) ---
         if (mode == Config::SimulationMode::EFFUSION) {
-            // Проверяем, пересекает ли частица вертикальную линию перегородки
             double k = p.radius;
             
-            // Если частица находится в районе перегородки по координате X
             if (std::abs(p.predicted_position.x - Config::WALL_X) < p.radius) {
-                // ПРОВЕРЯЕМ: ПОПАЛИ ЛИ МЫ В ДЫРКУ?
-                // Если координата Y частицы лежит ВНУТРИ дырки — она пролетает свободно (ничего не делаем)
+                //ПРОВЕРЯЕМ: ПОПАЛИ ЛИ МЫ В ДЫРКУ?
+                //tсли координата Y частицы лежит внутри дырки — она пролетает свободно
                 if (p.predicted_position.y > Config::HOLE_TOP && p.predicted_position.y < Config::HOLE_BOTTOM) {
                     continue; 
                 }
                 
-                // ЕСЛИ В ДЫРКУ НЕ ПОПАЛИ — ОТСКАКИВАЕМ ОТ ПЕРЕГОРОДКИ
                 if (p.position.x < Config::WALL_X) {
-                    // Летела слева -> возвращаем налево
+                    //летела слева -> возвращаем налево
                     p.predicted_position.x = Config::WALL_X - p.radius;
                     if (p.velocity.x > 0.0) p.velocity.x = -p.velocity.x;
                 } else {
-                    // Летела справа -> возвращаем направо
+                    //летела справа -> возвращаем направо
                     p.predicted_position.x = Config::WALL_X + p.radius;
                     if (p.velocity.x < 0.0) p.velocity.x = -p.velocity.x;
                 }

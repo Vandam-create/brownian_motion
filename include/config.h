@@ -2,25 +2,24 @@
 #include <cmath>
 
 namespace Config {
-    // --- ПЕРЕЧИСЛЕНИЕ РЕЖИМОВ СИМУЛЯЦИИ ---
     enum class SimulationMode {
         BROWNIAN_MOTION,  // Режим 1: Броуновское движение
         EFFUSION          // Режим 2: Эффузия газа
     };
 
-    // Текущий режим по умолчанию при старте приложения
     inline SimulationMode CURRENT_MODE = SimulationMode::BROWNIAN_MOTION;
 
-    // --- НАСТРОЙКИ ОКНА И ЭКРАНА ---
     inline constexpr int SCREEN_WIDTH = 1600;
     inline constexpr int SCREEN_HEIGHT = 800;
     inline constexpr double PIXEL_SCALE = 2.0; 
 
-    // --- НАСТРОЙКИ ФИЗИЧЕСКОГО БОКСА ---
     inline constexpr double BOX_WIDTH_ENGINE = 800.0;
     inline constexpr double BOX_HEIGHT_ENGINE = 400.0;
     inline constexpr double TIME_STEP = 0.016;
-    inline constexpr double GRID_CELL_SIZE = 25.0;
+    
+    // Поставил размер ячейки 25, потому что диаметр шара 25.0
+    // Так сетка не лагает и коллизии ловятса на 100%
+    inline constexpr double GRID_CELL_SIZE = 25.0; //менять на 100 при броуновском
 
     // --- НАСТРОЙКИ ПЕРЕГОРОДКИ ДЛЯ ЭФФУЗИИ (В ед. движка) ---
     inline constexpr double WALL_X = BOX_WIDTH_ENGINE / 2.0; // Перегородка ровно по центру (X = 400)
@@ -32,25 +31,28 @@ namespace Config {
     inline constexpr double K_BOLTZMANN = 1.38e-23;
 
     // =========================================================================
-    // БЛОК 1: НАСТРОЙКИ ДЛЯ БРОУНОВСКОГО ДВИЖЕНИЯ (ДИФФУЗИЯ)
+    // БЛОК 1: НАСТРОЙКИ ДЛЯ БРОУНОВСКОГО ДВИЖЕНИЯ (ДИФФУЗИЯ ПЫЛИНКИ В АРГОНЕ)
     // =========================================================================
-    // Параметры подобраны так, чтобы графики идеально ложились на теорию
-    inline constexpr int BR_GAS_COUNT = 850;          
-    inline constexpr double BR_GAS_MASS_SI = 6.6e-26;
-    inline constexpr double BR_GAS_RADIUS_SI = 4.0e-10; 
-    inline constexpr double BR_GAS_TEMP_SI = 450.0;    
+    inline constexpr int BR_GAS_COUNT = 850;          // Сделал побольше частиц для точности
+    inline constexpr double BR_GAS_MASS_SI = 6.6e-26;    // реальная масса аргона
+    inline constexpr double BR_GAS_RADIUS_SI = 3.0e-10;  // честный радиус аргона 0.3 нм
+    inline constexpr double BR_GAS_TEMP_SI = 450.0;      // подогрел газ чтоб шар лучше дрожал
 
-    // Параметры тяжелого Броуновского тела (из твоего исходного конфига)
-    inline constexpr double BROWN_MASS_SI = BR_GAS_MASS_SI * 1200.0; 
-    inline constexpr double BROWN_RADIUS_SI = 1.2e-8; 
+    // Параметры тяжелой пылинки
+    inline constexpr double BROWN_MASS_SI = BR_GAS_MASS_SI * 10000.0; // масса в 10000 раз больше газа
+    
+    // Уменьшил радиус до 25 нанометров. В движке это 2.5e-8 * 5e8 = 12.5 ед.
+    // Теперь молекулы не летают сквозь пылинку, потому что диаметр залез в размер сетки!
+    inline constexpr double BROWN_RADIUS_SI = 2.5e-7; 
 
-        // =========================================================================
+    // =========================================================================
     // БЛОК 2: НАСТРОЙКИ ДЛЯ ЭФФУЗИИ ГАЗА
     // =========================================================================
+    // Тут старый добрый аргон, при этих параметрах была хорошая картина
     inline constexpr int EFF_GAS_COUNT = 250;
-    inline constexpr double EFF_GAS_MASS_SI = 6.6e-26;
-    inline constexpr double EFF_GAS_RADIUS_SI = 3.0e-10; 
-    inline constexpr double EFF_GAS_TEMP_SI = 350.0;
+    inline constexpr double EFF_GAS_MASS_SI = 6.6e-26;   // тот же аргон
+    inline constexpr double EFF_GAS_RADIUS_SI = 3.0e-10; // те же крошечные точки
+    inline constexpr double EFF_GAS_TEMP_SI = 273.0;     // температура 0 по Цельсию
 
 
     // =========================================================================

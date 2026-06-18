@@ -3,12 +3,12 @@
 
 class UnitConverter {
 private:
-    const double SI_to_Engine_Length = 5e8;     // 1 метр СИ = 5*10^8 ед. движка
-    const double SI_to_Engine_Mass   = 1e24;    // 1 кг СИ = 10^24 ед. движка
-    const double SI_to_Engine_Time   = 5e8;     // ИСПРАВИТЬ С 1e8 НА 5e8 (чтобы скорость в движке была 1 к 1)
+    const double SI_to_Engine_Length = 5e8;     //1 метр СИ = 5*10^8 ед. движка
+    const double SI_to_Engine_Mass   = 1e24;    //1 кг СИ = 10^24 ед. движка
+    const double SI_to_Engine_Time   = 5e8;     //5e8 (чтобы скорость в движке была 1 к 1)
 
-    // Коэффициент пересчета Движок -> Экран SFML (дефолтное значение)
-    double engine_to_pixels = 4.0;              // ИСПРАВИТЬ С 25.0 НА 4.0 (мелкие пиксели)
+    //rоэффициент пересчета Движок -> Экран
+    double engine_to_pixels = 4.0;
 
 public:
     UnitConverter() = default;

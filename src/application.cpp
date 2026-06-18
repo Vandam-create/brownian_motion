@@ -23,7 +23,7 @@ void Application::resetSimulation() {
     theoretical_r.clear();
     brownian_track.clear();
     
-    // --- Сброс данных эффузии ---
+    //сброс данных эффузии
     effusion_N_left.clear();
     total_effusion_energy = 0.0;
     effusion_exit_count = 0;
@@ -34,15 +34,14 @@ void Application::resetSimulation() {
     initial_brownian_pos = Vec2d(box_width_engine / 2.0, box_height_engine / 2.0);
 
     if (Config::CURRENT_MODE == Config::SimulationMode::BROWNIAN_MOTION) {
-        // Режим Броуновского движения: берем параметры из Блока 1 (BR_...)
+        //режим Броуновского движения
         engine.createParticle(initial_brownian_pos, converter.massSIToEngine(Config::BROWN_MASS_SI), Config::BROWN_RADIUS_SI * 5e8, Vec2d(0, 0), false);
         
-        // Спавним плотный броуновский газ (850 штук)
         spawnGas(Config::BR_GAS_COUNT, Config::BR_GAS_TEMP_SI, Config::BR_GAS_MASS_SI, Config::BR_GAS_RADIUS_SI);
     } 
     else if (Config::CURRENT_MODE == Config::SimulationMode::EFFUSION) {
-        // Режим Эффузии: берем параметры из Блока 2 (EFF_...)
-        // Спавним разреженный газ (всего 200 штук) строго в левую комнату
+        //режим Эффузии
+
         spawnGas(Config::EFF_GAS_COUNT, Config::EFF_GAS_TEMP_SI, Config::EFF_GAS_MASS_SI, Config::EFF_GAS_RADIUS_SI);
     }
 
@@ -98,7 +97,7 @@ void Application::run() {
         processEvents();
         engine.step();
 
-        // --- РЕЖИМ 1: СБОР АНАЛИТИКИ БРОУНОВСКОГО ДВИЖЕНИЯ ---
+        //СБОР АНАЛИТИКИ БРОУНОВСКОГО ДВИЖЕНИЯ
         if (Config::CURRENT_MODE == Config::SimulationMode::BROWNIAN_MOTION && engine.getParticleCount() > 0) {
             Vec2d current_pos = engine.getParticle(0).position;
             double t = engine.getTime();
@@ -106,7 +105,7 @@ void Application::run() {
             double dx = current_pos.x - initial_brownian_pos.x;
             double dy = current_pos.y - initial_brownian_pos.y;
             experimental_r.push_back(std::sqrt(dx * dx + dy * dy));
-            theoretical_r.push_back(std::sqrt(M_PI * Config::DIFFUSION_D_ENGINE * t));
+            theoretical_r.push_back(std::sqrt(4 * Config::DIFFUSION_D_ENGINE * t));
 
             track_timer += engine.getTimeStep();
             if (track_timer >= track_interval) {
@@ -115,28 +114,28 @@ void Application::run() {
                 brownian_track.append(sf::Vertex(sf::Vector2f(static_cast<float>(pix_pos.x), static_cast<float>(pix_pos.y)), sf::Color(255, 215, 0, 150)));
             }
         }
-        // --- РЕЖИМ 2: СБОР АНАЛИТИКИ ЭФФУЗИИ ГАЗА С ИСЧЕЗНОВЕНИЕМ ЧАСТИЦ ---
+        //СБОР АНАЛИТИКИ ЭФФУЗИИ ГАЗА С ИСЧЕЗНОВЕНИЕМ ЧАСТИЦ
         else if (Config::CURRENT_MODE == Config::SimulationMode::EFFUSION) {
             int left_count = 0;
 
-            // Идем по массиву частиц С КОНЦА (обратный цикл), чтобы при удалении частиц индексы не ломались!
+            //идем по массиву частиц С КОНЦА (обратный цикл), чтобы при удалении частиц индексы не ломались(по иному будет сложно)
             size_t p_count = engine.getParticleCount();
             for (size_t i = p_count; i > 0; --i) {
                 size_t idx = i - 1;
                 const auto& p = engine.getParticle(idx);
 
-                // Если частица всё еще в левой половине — просто считаем её
+                //если частица всё еще в левой половине — просто считаем её
                 if (p.position.x < Config::WALL_X) {
                     left_count++;
                 } 
-                // ЕСЛИ ЧАСТИЦА ПЕРЕСЕКЛА ЛИНЮ ПЕРЕГОРОДКИ (ВЫЛЕТЕЛА!)
+                //ЕСЛИ ЧАСТИЦА ПЕРЕСЕКЛА ЛИНЮ ПЕРЕГОРОДКИ (ВЫЛЕТЕЛА!)
                 else {
                     // 1. Считаем её кинетическую энергию в момент вылета
                     double v_sq = p.velocity.x * p.velocity.x + p.velocity.y * p.velocity.y;
                     double mass = (p.inv_mass > 0.0) ? (1.0 / p.inv_mass) : 1.0;
                     double e_k = 0.5 * mass * v_sq;
 
-                    // --- ЖЕСТКАЯ МОДИФИКАЦИЯ ДЛЯ ТЕРМОСТАТИРОВАНИЯ НАБЛЮДЕНИЯ ---
+
                     // Нам нужно посчитать среднюю энергию газа внутри ИМЕННО В ЭТОТ КАДР, чтобы нормировать вылет
                     double current_internal_energy_sum = 0.0;
                     int current_left_count = 0;
@@ -155,13 +154,13 @@ void Application::run() {
                     total_effusion_energy += (e_k / current_avg_internal); 
                     effusion_exit_count++;        
 
-                    // 3. Мгновенно удаляем частицу
+                    //мгновенно удаляем частицу
                     engine.removeParticle(idx);
                 }
 
             }
             
-            // Записываем текущее количество оставшихся частиц для зеленого графика
+            //записываем текущее количество оставшихся частиц для зеленого графика
             effusion_N_left.push_back(static_cast<double>(left_count));
         }
 
@@ -246,7 +245,7 @@ void Application::render() {
 }
 
 void Application::renderMenu() {
-    // 1. Создаем расширенную полупрозрачную подложку меню (теперь ширина 750 пикселей)
+    //создание расширенную полупрозрачную подложку меню (ширина 750 пикселей)
     sf::RectangleShape menu_box(sf::Vector2f(750.0f, 260.0f));
     menu_box.setPosition(30.0f, 30.0f);
     menu_box.setFillColor(sf::Color(25., 25.0f, 35.0f, 240)); // Глубокий темный цвет
@@ -254,24 +253,24 @@ void Application::renderMenu() {
     menu_box.setOutlineColor(sf::Color::White);
     window.draw(menu_box);
 
-    // 2. Загружаем стандартный системный шрифт Ubuntu прямо из системы
+    //загружаю шрифты
     sf::Font font;
     if (!font.loadFromFile("/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf")) {
         // Резервный путь, если первого шрифта вдруг нет
         font.loadFromFile("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
     }
 
-    // Настраиваем объект текста
+    //текст
     sf::Text text;
     text.setFont(font);
     text.setCharacterSize(16);
     text.setFillColor(sf::Color::White);
 
-    // Координаты начала осей графика (остались прежними)
+    //Координаты начала осей графика
     float ox = 70.0f;
     float oy = 240.0f;
     
-    // Рисуем рамку осей координат графика
+    //Рисуем рамку осей координат графика
     sf::VertexArray axes(sf::Lines, 4);
     axes[0] = sf::Vertex(sf::Vector2f(ox, oy), sf::Color::White);       
     axes[1] = sf::Vertex(sf::Vector2f(ox + 350.0f, oy), sf::Color::White); // Ось X (350 пикс)
@@ -279,14 +278,14 @@ void Application::renderMenu() {
     axes[3] = sf::Vertex(sf::Vector2f(ox, oy - 180.0f), sf::Color::White); // Ось Y (180 пикс)
     window.draw(axes);
 
-    // Подписи к осям графика
+    //Подписи к осям графика
     text.setString("t");
     text.setPosition(ox + 360.0f, oy - 10.0f);
     window.draw(text);
 
-    // --- ОТРИСОВКА ДАННЫХ ДЛЯ РЕЖИМА БРОУНОВСКОГО ДВИЖЕНИЯ ---
+    //ОТРИСОВКА ДАННЫХ ДЛЯ РЕЖИМА БРОУНОВСКОГО ДВИЖЕНИЯ
     if (Config::CURRENT_MODE == Config::SimulationMode::BROWNIAN_MOTION) {
-        // Заголовок подрежима
+        //заголовок ht;bvf
         text.setString("Mode: Brownian Motion");
         text.setPosition(460.0f, 50.0f);
         text.setFillColor(sf::Color(255, 165, 0)); // Оранжевый
@@ -319,7 +318,7 @@ void Application::renderMenu() {
         window.draw(exp_line);
         window.draw(theo_line);
 
-        // Текстовая аналитика справа от графика
+        //текстовая аналитика справа от графика
         text.setString("Graph Legend:");
         text.setPosition(460.0f, 90.0f);
         window.draw(text);
@@ -344,7 +343,6 @@ void Application::renderMenu() {
         text.setFillColor(sf::Color(150, 150, 150));
         window.draw(text);
     }   
-         // --- АНАЛИТИКА ЭФФУЗИИ С ИСЧЕЗНОВЕНИЕМ ЧАСТИЦ В МЕНЮ ---
     else if (Config::CURRENT_MODE == Config::SimulationMode::EFFUSION) {
         text.setString("N_left");
         text.setPosition(40.0f, 40.0f);
@@ -364,12 +362,12 @@ void Application::renderMenu() {
         }
         window.draw(n_left_line);
 
-        // Выводим честный счетчик безвозвратно улетевших молекул
+        //выводим честный счетчик безвозвратно улетевших молекул
         text.setString("Particles Leaked: " + std::to_string(effusion_exit_count));
         text.setPosition(460.0f, 90.0f);
         window.draw(text);
 
-        // Считаем среднюю энергию частиц, оставшихся внутри левого бокса прямо сейчас
+        //считаем среднюю энергию частиц, оставшихся внутри левого бокса прямо сейчас
         double current_left_energy_sum = 0.0;
         int left_count = 0;
         size_t p_count = engine.getParticleCount();
@@ -389,7 +387,7 @@ void Application::renderMenu() {
         }
 
 
-        // Форматирование double строки
+        //Форматирование double строки
         std::string ratio_str = std::to_string(live_ratio);
         std::replace(ratio_str.begin(), ratio_str.end(), ',', '.'); 
         if (ratio_str.length() > 4) ratio_str = ratio_str.substr(0, 4);
@@ -406,7 +404,7 @@ void Application::renderMenu() {
         window.draw(text);
         text.setFillColor(sf::Color::White);
 
-        // Расчет погрешности эксперимента
+        //Расчет погрешности эксперимента
         double error_percent = 100.0;
         if (live_ratio > 0.001) {
             error_percent = std::abs(live_ratio - 1.5) / 1.5 * 100.0;
